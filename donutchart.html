@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MSFT DIAL</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+  <p>This is the Dial component.</p>
+
+  <script>
+    const data = [
+      { percent: 0.125, text:"shoes"  },      
+      { percent: 0.125, text:"pants"  },
+      { percent: 0.125, text:"t-shirt" }, 
+      { percent: 0.125, text:"scarf" },        
+      { percent: 0.5, text:""  },  
+    ];
+
+    let percentData = [];
+      width = 500;
+      height = 500;
+      thickness = 80;
+      radius = 150;
+      p = Math.PI * 2;
+
+    data.forEach((e) => percentData.push(e.percent));
+    
+    // color range
+    // let color = d3.scaleOrdinal(d3.schemeCategory10);
+    let color = d3.scaleOrdinal()
+      .range(["#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3"]);
+
+    // donut chart arc
+    let arc = d3.arc()
+      .innerRadius(radius - thickness)
+      .outerRadius(radius) 
+
+    let pie = d3.pie()
+      .value((d) => 
+        console.log("pie",d);
+        return d;
+      )
+      .startAngle(-0.5 * Math.PI)
+      .sort(null);
+
+    // define the svg for donut chart
+    let canvas = d3.select("body")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
+
+    // let group = canvas.append("g")
+    //   .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
+
+    // let arcs = group.selectAll(".arc")
+    // "arcs element is a container used to group other SVG elements"
+    let arcs = canvas.selectAll(".arc")
+      .data(pie(percentData))
+      .enter()
+      .append("g")
+      .attr("class", "arc")
+
+    // append path   
+    arcs.append("path")
+      .attr("d", arc)
+       // .attr("fill", (d) => { return color(d.percentData);});
+      // .attr("fill", (d,i)=>{return d.data.color})     
+      // .attr("fill", (d, i) => color(i));
+      .attr("fill", "black")
+      // transition 
+      .transition()
+      .ease(d3.easeLinear)
+      .duration(2000)
+      // .attrTween("d", tweenDonut);
+      .attrTween("d", twDonut);
+    
+    // append text
+    arcs.append("text")
+      // .transition()
+      // .ease(d3.easeLinear)
+      // .duration(2000)
+
+      .attr("transform", (d) =>  return "translate(" + arc.centroid(d) + ")")
+      .attr("text-anchor", "middle")
+      .attr("front-size", "20px")
+      .text((d) => 
+        return d.data
+      )
+      .attr("fill", "white"); 
+ 
+    // Helper functions for animation of donut chart
+    function tweenDonut(b) {
+      b.innerRadius = 0;
+      let i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+      return (t) =>   
+        return arc(i(t)) 
+      
+    };
+
+    function twDonut(d) {
+      let i = d3.interpolate(d.startAngle+0.1, d.endAngle);
+      return (t) => 
+        d.endAngle = i(t); 
+        return arc(d)
+    }; 
+
+  </script>
+</body>
+</html>
+
+
+
+
