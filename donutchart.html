@@ -24,7 +24,7 @@
       radius = 150;
       p = Math.PI * 2;
 
-    data.forEach((e) => percentData.push(e.percent));
+    data.forEach(e => percentData.push(e.percent));
     
     // color range
     // let color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -34,12 +34,12 @@
     // donut chart arc
     let arc = d3.arc()
       .innerRadius(radius - thickness)
-      .outerRadius(radius) 
+      .outerRadius(radius); 
 
     let pie = d3.pie()
-      .value((d) => 
+      .value(d => {
         console.log("pie",d);
-        return d;
+        return d}
       )
       .startAngle(-0.5 * Math.PI)
       .sort(null);
@@ -56,38 +56,51 @@
     //   .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
 
     // let arcs = group.selectAll(".arc")
+
     // "arcs element is a container used to group other SVG elements"
     let arcs = canvas.selectAll(".arc")
       .data(pie(percentData))
       .enter()
       .append("g")
       .attr("class", "arc")
+      
+      .on("mouseover", function(d) {
+        let g = d3.select(this)
+          .style("cursor", "pointer")
+          .style("fill", "green")
+          .append("g")
+          .attr("class", "text-group");
+        console.log(g);
+       });
 
     // append path   
     arcs.append("path")
       .attr("d", arc)
-       // .attr("fill", (d) => { return color(d.percentData);});
+       // .attr("fill", (d) => { return color(d.percentData);})
       // .attr("fill", (d,i)=>{return d.data.color})     
-      // .attr("fill", (d, i) => color(i));
-      .attr("fill", "black")
-      // transition 
-      .transition()
-      .ease(d3.easeLinear)
-      .duration(2000)
-      // .attrTween("d", tweenDonut);
-      .attrTween("d", twDonut);
+       // .attr("fill", (d, i) => color(i))
+      .style("fill", "black")
+
+      .on("click", function(d) {
+        let g = d3.select(this)
+        // transition 
+        .transition()
+        .ease(d3.easeLinear)
+        .duration(500)
+        // .attrTween("d", tweenDonut);
+        .attrTween("d", twDonut);
+    });
     
     // append text
     arcs.append("text")
       // .transition()
       // .ease(d3.easeLinear)
-      // .duration(2000)
+      // .duration(1000)
 
-      .attr("transform", (d) =>  return "translate(" + arc.centroid(d) + ")")
+      .attr("transform", d => { return "translate(" + arc.centroid(d) + ")" })
       .attr("text-anchor", "middle")
-      .attr("front-size", "20px")
-      .text((d) => 
-        return d.data
+      .attr("front-size", "25px")
+      .text(d => { return d.data }
       )
       .attr("fill", "white"); 
  
@@ -95,17 +108,16 @@
     function tweenDonut(b) {
       b.innerRadius = 0;
       let i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-      return (t) =>   
-        return arc(i(t)) 
-      
+      return t => { return arc(i(t)) }
     };
 
     function twDonut(d) {
-      let i = d3.interpolate(d.startAngle+0.1, d.endAngle);
-      return (t) => 
+      let i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
+      return (t) => {
         d.endAngle = i(t); 
-        return arc(d)
-    }; 
+        return arc(d);
+      }
+    };
 
   </script>
 </body>
