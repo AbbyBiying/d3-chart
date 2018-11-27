@@ -10,11 +10,11 @@
 
   <script>
     const data = [
-      { percent: 0.125, text:"shoes"  },      
-      { percent: 0.125, text:"pants"  },
-      { percent: 0.125, text:"t-shirt" }, 
-      { percent: 0.125, text:"scarf" },        
-      { percent: 0.5, text:""  },  
+      { percent: 0.125, color:"black", name:"shoes"  },      
+      { percent: 0.125, color:"black", name:"pants"  },
+      { percent: 0.125, color:"black", name:"t-shirt" }, 
+      { percent: 0.125, color:"black", name:"scarf" },        
+      { percent: 0.5, color:"black", name:""  },  
     ];
 
     let percentData = [];
@@ -25,16 +25,15 @@
       p = Math.PI * 2;
 
     data.forEach(e => percentData.push(e.percent));
-    
-    // color range
-    // let color = d3.scaleOrdinal(d3.schemeCategory10);
-    let color = d3.scaleOrdinal()
-      .range(["#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3"]);
-
+     
     // donut chart arc
     let arc = d3.arc()
       .innerRadius(radius - thickness)
       .outerRadius(radius); 
+
+    let outerArc = d3.arc()
+      .innerRadius(radius)
+      .outerRadius(radius+20); 
 
     let pie = d3.pie()
       .value(d => {
@@ -50,12 +49,7 @@
       .attr("width", width)
       .attr("height", height)
       .append("g")
-      .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
-
-    // let group = canvas.append("g")
-    //   .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')');
-
-    // let arcs = group.selectAll(".arc")
+      .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')')
 
     // "arcs element is a container used to group other SVG elements"
     let arcs = canvas.selectAll(".arc")
@@ -63,45 +57,39 @@
       .enter()
       .append("g")
       .attr("class", "arc")
-      
-      .on("mouseover", function(d) {
-        let g = d3.select(this)
-          .style("cursor", "pointer")
-          .style("fill", "green")
-          .append("g")
-          .attr("class", "text-group");
-        console.log(g);
-       });
+      .on("mouseover", handleMouseOver)
+      .on("mouseout", handleMouseOut)
+   
+    console.log("arcs", arcs); 
+
 
     // append path   
     arcs.append("path")
-      .attr("d", arc)
-       // .attr("fill", (d) => { return color(d.percentData);})
-      // .attr("fill", (d,i)=>{return d.data.color})     
-       // .attr("fill", (d, i) => color(i))
+      .attr("d", arc)   
       .style("fill", "black")
+      .on("click", handleClick)
+      .transition()
+      .delay(function(d,i) {
+        return i * 500; })
+      .duration(500)
+      .attrTween('d', function(d) {
+        var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
+        return function(t) {
+          d.endAngle = i(t); 
+          return arc(d)
+          }
+        })
 
-      .on("click", function(d) {
-        let g = d3.select(this)
-        // transition 
-        .transition()
-        .ease(d3.easeLinear)
-        .duration(500)
-        // .attrTween("d", tweenDonut);
-        .attrTween("d", twDonut);
-    });
-    
     // append text
     arcs.append("text")
       // .transition()
       // .ease(d3.easeLinear)
       // .duration(1000)
-
+   
       .attr("transform", d => { return "translate(" + arc.centroid(d) + ")" })
       .attr("text-anchor", "middle")
       .attr("front-size", "25px")
-      .text(d => { return d.data }
-      )
+      .text(d => { return d.data })
       .attr("fill", "white"); 
  
     // Helper functions for animation of donut chart
@@ -118,6 +106,44 @@
         return arc(d);
       }
     };
+
+    // Create Event Handlers for mouse
+    function handleMouseOver(d, i) {  
+      d3.select(this)
+        .style("cursor", "pointer")
+        .style("fill", "grey")
+        .append("g")
+        .attr("class", "text-group");
+
+      console.log("mouseover", this);
+     } 
+
+    function handleMouseOut(d, i) {
+      d3.select(this)
+      .style("fill", "black");     
+
+      console.log("mouseout", this);
+     }
+
+    //when you click on the arc not text in it
+    function handleClick(d) {
+      d3.select(this)
+      .transition()
+      .ease(d3.easeLinear)
+      .duration(500)
+
+      // .attrTween("d", tweenDonut);
+      .attrTween("d", twDonut);      
+      console.log("click event", this);
+    }
+
+    function arcTween(b) {
+      var i = d3.interpolate({value: b.previous}, b);
+      return function(t) {
+        d.endAngle = i(t); 
+          return arc(d)
+      };
+    }; 
 
   </script>
 </body>
