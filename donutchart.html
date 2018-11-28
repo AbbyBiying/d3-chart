@@ -22,25 +22,28 @@
       height = 500;
       thickness = 80;
       radius = 150;
-      p = Math.PI * 2;
+      pi = Math.PI * 2;
 
     data.forEach(e => percentData.push(e.percent));
      
     // donut chart arc
     let arc = d3.arc()
       .innerRadius(radius - thickness)
-      .outerRadius(radius); 
+      .outerRadius(radius);
 
+    // Arc for path surrounding the donut chart.
     let outerArc = d3.arc()
       .innerRadius(radius)
-      .outerRadius(radius+20); 
+      .outerRadius(radius+6)      
+      .startAngle(0)
+      .endAngle(pi);
 
     let pie = d3.pie()
       .value(d => {
         console.log("pie",d);
         return d}
       )
-      .startAngle(-0.5 * Math.PI)
+      .startAngle(-0.5 * pi/2)
       .sort(null);
 
     // define the svg for donut chart
@@ -62,23 +65,16 @@
    
     console.log("arcs", arcs); 
 
-
     // append path   
     arcs.append("path")
       .attr("d", arc)   
       .style("fill", "black")
       .on("click", handleClick)
       .transition()
-      .delay(function(d,i) {
+      .delay((d,i) => {
         return i * 500; })
       .duration(500)
-      .attrTween('d', function(d) {
-        var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
-        return function(t) {
-          d.endAngle = i(t); 
-          return arc(d)
-          }
-        })
+      .attrTween('d', arcTween)
 
     // append text
     arcs.append("text")
@@ -91,7 +87,22 @@
       .attr("front-size", "25px")
       .text(d => { return d.data })
       .attr("fill", "white"); 
- 
+
+   arcs.append("path")
+      .attr("d", outerArc())      
+      .attr("class", "arc")
+
+      .style("fill", "black")
+      .style("stroke", "blue")
+      .on("click", handleClick)
+      .transition()
+      .delay((d,i) => {
+        return i * 500; })
+      .duration(500)
+      .attrTween('d', arcTween)
+
+      ;
+
     // Helper functions for animation of donut chart
     function tweenDonut(b) {
       b.innerRadius = 0;
@@ -131,20 +142,20 @@
       .transition()
       .ease(d3.easeLinear)
       .duration(500)
-
       // .attrTween("d", tweenDonut);
-      .attrTween("d", twDonut);      
+      .attrTween("d", twDonut);    
+
       console.log("click event", this);
     }
 
     function arcTween(b) {
-      var i = d3.interpolate({value: b.previous}, b);
-      return function(t) {
-        d.endAngle = i(t); 
-          return arc(d)
-      };
-    }; 
 
+         var i = d3.interpolate(b.startAngle+0.1, b.endAngle);
+        return function(t) {
+          b.endAngle = i(t); 
+          return arc(b)
+          }
+        }
   </script>
 </body>
 </html>
