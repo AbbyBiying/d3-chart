@@ -7,7 +7,7 @@
 
 <body>
   <p>This is the Dial component.</p>
-
+   
   <script>
     const data = [
       { percent: 0.125, color:"black", name:"shoes"  },      
@@ -34,17 +34,26 @@
     // Arc for path surrounding the donut chart.
     let outerArc = d3.arc()
       .innerRadius(radius)
-      .outerRadius(radius+6)      
-      .startAngle(0)
-      .endAngle(pi);
+      .outerRadius(radius + 6)      
+      .startAngle(-0.5 * pi/2)
+      // .endAngle(pi);
 
     let pie = d3.pie()
       .value(d => {
         console.log("pie",d);
-        return d}
+        return d;}
       )
       .startAngle(-0.5 * pi/2)
       .sort(null);
+
+    let pie2 = d3.pie()
+      .value(d => {
+        console.log("pie2",d);
+        return d;}
+      )
+      .startAngle(-0.5 * pi/2)
+      .sort(null);
+
 
     // define the svg for donut chart
     let canvas = d3.select("body")
@@ -53,7 +62,7 @@
       .attr("height", height)
       .append("g")
       .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')')
-
+    
     // "arcs element is a container used to group other SVG elements"
     let arcs = canvas.selectAll(".arc")
       .data(pie(percentData))
@@ -62,39 +71,40 @@
       .attr("class", "arc")
       .on("mouseover", handleMouseOver)
       .on("mouseout", handleMouseOut)
-   
+
     console.log("arcs", arcs); 
 
-    // append path   
-    arcs.append("path")
-      .attr("d", arc)   
-      .style("fill", "transparent")
-      .on("click", handleClick)
-      .transition()
-      .delay((d,i) => {
-        return i * 500; })
-      .duration(500)
-      .attrTween('d', arcTween)
+    // append path
 
-   arcs.append("path")
+    // arcs.append("path")
+    //   .data(pie2(percentData))
+    //   .attr("d", arc)         
+    //   .attr("class", "arc")
+    //   .style("fill", "none")
+    //   .on("click", handleClick)
+    //   .transition()
+    //   .delay((d,i) => {
+    //     return i * 500; })
+    //   .ease(d3.easeLinear)
+    //   .duration(500)
+    //   .attrTween('d', twDonut)
+
+    arcs.append("path")
       .attr("d", outerArc)      
       .attr("class", "arc")
 
       .style("fill", "black")
       .style("stroke", "blue")
-      .on("click", handleClick)
+
       .transition()
       .delay((d,i) => {
         return i * 500; })
+      .ease(d3.easeLinear)
       .duration(500)
-      .attrTween('d', arcTween)
+      .attrTween('d', twDonut)
 
     // append text
-    arcs.append("text")
-      // .transition()
-      // .ease(d3.easeLinear)
-      // .duration(1000)
-   
+    arcs.append("text")   
       .attr("transform", d => { return "translate(" + arc.centroid(d) + ")" })
       .attr("text-anchor", "middle")
       .attr("front-size", "25px")
@@ -102,12 +112,6 @@
       .attr("fill", "white"); 
 
     // Helper functions for animation of donut chart
-    function tweenDonut(b) {
-      b.innerRadius = 0;
-      let i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-      return t => { return arc(i(t)) }
-    };
-
     function twDonut(d) {
       let i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
       return (t) => {
@@ -115,6 +119,12 @@
         return arc(d);
       }
     };
+
+    function tweenDonut(b) {
+      b.innerRadius = 0;
+      var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+      return function(t) { return arc2(i(t)); };
+    }
 
     // Create Event Handlers for mouse
     function handleMouseOver(d, i) {  
@@ -124,36 +134,29 @@
         .append("g")
         .attr("class", "text-group");
 
-      console.log("mouseover", this);
+      // console.log("mouseover", this);
      } 
 
     function handleMouseOut(d, i) {
       d3.select(this)
       .style("fill", "black");     
 
-      console.log("mouseout", this);
+      // console.log("mouseout", this);
      }
 
     //when you click on the arc not text in it
     function handleClick(d) {
       d3.select(this)
-      .transition()
-      .ease(d3.easeLinear)
-      .duration(500)
-      // .attrTween("d", tweenDonut);
-      .attrTween("d", twDonut);    
+        .style("fill", "grey")
+
+      // .transition()
+      // .ease(d3.easeLinear)
+      // .duration(500)
+      // .attrTween("d", twDonut);
 
       console.log("click event", this);
     }
 
-    function arcTween(b) {
-
-        var i = d3.interpolate(b.startAngle+0.1, b.endAngle);
-        return function(t) {
-          b.endAngle = i(t); 
-          return arc(b)
-          }
-        }
   </script>
 </body>
 </html>
