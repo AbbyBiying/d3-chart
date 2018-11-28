@@ -68,7 +68,20 @@
     // append path   
     arcs.append("path")
       .attr("d", arc)   
+      .style("fill", "transparent")
+      .on("click", handleClick)
+      .transition()
+      .delay((d,i) => {
+        return i * 500; })
+      .duration(500)
+      .attrTween('d', arcTween)
+
+   arcs.append("path")
+      .attr("d", outerArc)      
+      .attr("class", "arc")
+
       .style("fill", "black")
+      .style("stroke", "blue")
       .on("click", handleClick)
       .transition()
       .delay((d,i) => {
@@ -87,21 +100,6 @@
       .attr("front-size", "25px")
       .text(d => { return d.data })
       .attr("fill", "white"); 
-
-   arcs.append("path")
-      .attr("d", outerArc())      
-      .attr("class", "arc")
-
-      .style("fill", "black")
-      .style("stroke", "blue")
-      .on("click", handleClick)
-      .transition()
-      .delay((d,i) => {
-        return i * 500; })
-      .duration(500)
-      .attrTween('d', arcTween)
-
-      ;
 
     // Helper functions for animation of donut chart
     function tweenDonut(b) {
@@ -150,7 +148,7 @@
 
     function arcTween(b) {
 
-         var i = d3.interpolate(b.startAngle+0.1, b.endAngle);
+        var i = d3.interpolate(b.startAngle+0.1, b.endAngle);
         return function(t) {
           b.endAngle = i(t); 
           return arc(b)
