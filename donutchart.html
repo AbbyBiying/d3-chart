@@ -57,9 +57,9 @@
 
     // define the svg for donut chart
     let canvas = d3.select("body")
-      .append("svg")
+      .append("svg")      
       .attr("width", width)
-      .attr("height", height)
+      .attr("height", height)      
       .append("g")
       .attr('transform', 'translate(' + (width/2) + ',' + (height/2) + ')')
     
@@ -95,6 +95,7 @@
 
       .style("fill", "black")
       .style("stroke", "blue")
+      .on("click", handleClick)
 
       .transition()
       .delay((d,i) => {
@@ -131,23 +132,21 @@
       d3.select(this)
         .style("cursor", "pointer")
         .style("fill", "grey")
-        .append("g")
         .attr("class", "text-group");
 
-      // console.log("mouseover", this);
+      console.log("mouseover");
      } 
 
     function handleMouseOut(d, i) {
-      d3.select(this)
-      .style("fill", "black");     
-
+      d3.select(this)       
+       .style("fill", "black");     
       // console.log("mouseout", this);
      }
 
     //when you click on the arc not text in it
     function handleClick(d) {
-      d3.select(this)
-        .style("fill", "grey")
+      d3.select(this)      
+         .style("fill", "grey")
 
       // .transition()
       // .ease(d3.easeLinear)
